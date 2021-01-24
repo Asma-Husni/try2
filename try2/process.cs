@@ -138,10 +138,12 @@ namespace try2
             {
                 sum += Convert.ToInt32(dataGridView1.Rows[i].Cells["عدد"].Value);
             }
+            MessageBox.Show(Convert.ToString(sum));
             label5.Text = sum.ToString();
 
+
             cn.Open();
-            SqlDataAdapter da1 = new SqlDataAdapter("select name , Num_colum, Num_chire from halls where sum > = '" + label5.Text + "' ", cn);
+            SqlDataAdapter da1 = new SqlDataAdapter("select name , Num_colum, Num_chire from halls where sum >='" + label5.Text + "' ", cn);
             DataTable dt1 = new DataTable();
             da1.Fill(dt1);
             dataGridView2.DataSource = dt1;
@@ -180,6 +182,7 @@ namespace try2
            label1.Text = dataGridView2.SelectedRows[0].Cells["name"].Value.ToString();
             int chair = Convert.ToInt32(dataGridView2.SelectedRows[0].Cells["Num_chire"].Value);
             int row = Convert.ToInt32(dataGridView2.SelectedRows[0].Cells["Num_colum"].Value);
+            MessageBox.Show(Convert.ToString(row));
             for (int i = 1; i <= row; i++)
 
             {
@@ -213,21 +216,32 @@ namespace try2
                     MessageBox.Show(Convert.ToString(code));
 
                     cn.Open();
-
-                    SqlCommand command = new SqlCommand("select TOP(1) s.id,s.name from student s, Process where code ='" + code + "'and s.id != Stu_id ", cn);
-                    SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read())
+                  
+                        SqlCommand command = new SqlCommand("SELECT top(1) s.id ,s.name from student s WHERE s.code='" + code + "' and  NOT EXISTS( SELECT TOP 1 NULL FROM Process WHERE s.id = Stu_id and Subject_Code = '" + code + "')", cn);
+                        SqlDataReader reader = command.ExecuteReader();
+                        bool istt;
+                    try
                     {
-                        id = reader.GetString(0);
-                        name = reader.GetString(1);
-                        MessageBox.Show(id);
-                        MessageBox.Show(name);
+                        while (reader.Read())
+                        {
+                            id = reader.GetString(0);
+                            name = reader.GetString(1);
+                            MessageBox.Show(id);
+                            MessageBox.Show(name);
+                        }
                     }
-                    cn.Close();
-                    cn.Open();
-                    SqlCommand cmd = new SqlCommand("INSERT INTO [dbo].[process]([Stu_id],[Stu_name],[Subject_Code],[Chair],[Halls])VALUES('" + id + "' ,'" + name + "','" + code + "','" + latter + "','" + label1.Text + "')", cn);
-                    cmd.ExecuteNonQuery();
-                    MessageBox.Show("Done");
+                    catch (Exception ex)
+                    {
+                        for (int j = 0; j <= 10; j++)
+                        {
+                            cn.Close();
+                            cn.Open();
+                            SqlCommand cmd = new SqlCommand("INSERT INTO [dbo].[process]([Stu_id],[Stu_name],[Subject_Code],[Chair],[Halls])VALUES('" + id + "' ,'" + name + "','" + code + "','" + latter+j + "','" + label1.Text + "')", cn);
+                            cmd.ExecuteNonQuery();
+                            MessageBox.Show("Done");
+                            
+                        }
+                    }
                     cn.Close();
                 }
                 else
@@ -236,22 +250,32 @@ namespace try2
 
                     cn.Open();
 
-                    SqlCommand command = new SqlCommand("SELECT top(1) s.id,s.name from student s WHERE s.code = '" + code + "' and  NOT EXISTS( SELECT TOP 1 NULL FROM Process WHERE s.id = Stu_Id and Subject_Code = '" + code + "' )", cn);
+                    SqlCommand command = new SqlCommand("SELECT top(1) s.id ,s.name from student s WHERE s.code='" + code + "' and  NOT EXISTS( SELECT TOP 1 NULL FROM Process WHERE s.id = Stu_id and Subject_Code = '" + code + "' )", cn);
 
                     SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read())
+                    try
                     {
-                        id = reader.GetString(0);
-                        name = reader.GetString(1);
-                        MessageBox.Show(id);
-                        MessageBox.Show(name);
+                        while (reader.Read())
+                        {
+                            id = reader.GetString(0);
+                            name = reader.GetString(1);
+                            MessageBox.Show(id);
+                            MessageBox.Show(name);
+                        }
                     }
-                    cn.Close();
-                    cn.Open();
-                    SqlCommand cmd = new SqlCommand("INSERT INTO [dbo].[process]([Stu_id],[Stu_name],[Subject_Code],[Chair],[Halls])VALUES('" + id + "' ,'" + name + "','" + code + "','" + latter + "','" + label1.Text + "')", cn);
-                    cmd.ExecuteNonQuery();
-                    MessageBox.Show("Done");
-                    cn.Close();
+                    catch (Exception ex)
+                    {
+
+                        cn.Close();
+                        cn.Open();
+                        for (int k = 0; k <= 10; k++)
+                        {
+                            SqlCommand cmd = new SqlCommand("INSERT INTO [dbo].[process]([Stu_id],[Stu_name],[Subject_Code],[Chair],[Halls])VALUES('" + id + "' ,'" + name + "','" + code + "','" + latter+k + "','" + label1.Text + "')", cn);
+                            cmd.ExecuteNonQuery();
+                            MessageBox.Show("Done");
+                        }
+                        cn.Close();
+                    }
                 }
             }
         }
